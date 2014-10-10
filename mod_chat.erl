@@ -10,7 +10,6 @@
 -include("logger.hrl").
 -include("jlib.hrl").
 
-
 -define(NS_CHAT, <<"who:iq:chat">>).
 
 -export([handle_local_iq/3]).

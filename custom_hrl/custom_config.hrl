@@ -1,1 +1,1 @@
--define(MAIN_HOSTNAME, "harmon.dev.versapp.co").
+-define(MAIN_HOSTNAME, "versapp.co").
