@@ -24,7 +24,7 @@
 
 -export([get_device_version/2, set_device_version/3]).
 
--export([get_session_key/2]).
+-export([insert_session_key/2, delete_session_key/2, get_session_key/2]).
 
 %%%------------------------
 %%% TABLES
@@ -562,3 +562,51 @@ get_session_key(Server, Username)->
                         error
         end.
 
+
+-spec insert_session_key(binary(), binary()) -> ok | error.
+
+insert_session_key(Server, Username)->
+
+	SessionKey = base64:encode(crypto:strong_rand_bytes(10)),
+
+	Res = ejabberd_odbc:sql_query(Server,
+                                [
+                                        <<"INSERT INTO ">>,
+                                        ?SESSION_TABLE, <<" ">>,
+
+                                        <<"(">>,
+                                        ?SESSION_TABLE_COLUMN_USERNAME,<<", ">>,
+                                        ?SESSION_TABLE_COLUMN_SESSION_KEY,
+                                        <<") ">>,
+
+                                        <<"VALUES ">>,
+                                        <<"(">>,
+                                        <<"'">>,Username,<<"', ">>,
+                                        <<"'">>,SessionKey,<<"'">>,
+                                        <<") ">>
+                                ]),
+
+        case Res of
+                {updated, _Id} ->
+                        ok;
+                _->
+                        ?INFO_MSG("Unable to insert session key: ~p", [Res]),
+                        error
+	        
+
+end.
+
+-spec delete_session_key(binary(), binary()) -> ok.
+
+delete_session_key(Server, Username)->
+
+	Res = ejabberd_odbc:sql_query(Server,
+                                [
+                                        <<"DELETE FROM ">>,
+					?SESSION_TABLE, <<" ">>,
+
+					<<"WHERE ">>,
+					?SESSION_TABLE_COLUMN_USERNAME, <<"='">>,Username,<<"'">>                              
+                                ]),
+
+ok.
