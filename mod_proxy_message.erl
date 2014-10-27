@@ -24,6 +24,7 @@ stop(Host) ->
         ?INFO_MSG("STOP MOD_PROXY_MESSAGE.", []),
         ejabberd_hooks:delete(filter_packet, global, ?MODULE, proxy_message, 3),
 	ok.
+
 proxy_message({From, To, #xmlel{name = <<"message">>, attrs = Attrs, children = Children } = Packet}) ->
 
 	?INFO_MSG("PROXY MESSAGE: ~p", [Packet]),

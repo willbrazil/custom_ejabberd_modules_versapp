@@ -12,6 +12,8 @@
 
 -define(NS_WHO_SESSION, <<"who:iq:session">>).
 
+-import(custom_odbc_queries, [get_session_key/2]).
+
 -export([start/2, stop/1, set_session/4, unset_session/4, get_session_id/3]).
 
 start(Host, Opts) ->
@@ -47,7 +49,18 @@ unset_session(User, Server, _Resource, _Packet) ->
 
 get_session_id({Item, User, Server, _, _, _, _} = From, _To, #iq{type = Type, sub_el = SubEl} = IQ) ->
 	?INFO_MSG("Getting IQ Packet for ~p", [From]),
-	{_, _, [[SessionKey]]} = ejabberd_odbc:sql_query(Server,
-                                [<<"select session_key from session  where username='">>,User,<<"'">>]),
-	?INFO_MSG("SESSION ID IS: ~p", SessionKey),
-	IQ#iq{type = result, sub_el = [{xmlel, "value", [], [{xmlcdata, SessionKey}]}]}.
+%%	{_, _, [[SessionKey]]} = ejabberd_odbc:sql_query(Server,
+  %%                              [<<"select session_key from session  where username='">>,User,<<"'">>]),
+
+	SessionKey = custom_odbc_queries:get_session_key(Server, User),
+
+	case SessionKey of
+
+		'undefined' -> 
+			IQ#iq{type = error, sub_el = [{xmlel, "value", [], [{xmlcdata, <<"ERROR">>}]}]};
+		'error' -> 
+			IQ#iq{type = error, sub_el = [{xmlel, "value", [], [{xmlcdata, <<"ERROR">>}]}]};
+		_->
+			IQ#iq{type = result, sub_el = [{xmlel, "value", [], [{xmlcdata, SessionKey}]}]}
+	end.
+

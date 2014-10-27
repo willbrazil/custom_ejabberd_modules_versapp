@@ -24,6 +24,8 @@
 
 -export([get_device_version/2, set_device_version/3]).
 
+-export([get_session_key/2]).
+
 %%%------------------------
 %%% TABLES
 %%%------------------------
@@ -70,6 +72,11 @@
 -define(DEVICE_VERSION_TABLE, <<"device_version">>).
 -define(DEVICE_VERSION_TABLE_COLUMN_USERNAME, <<"username">>).
 -define(DEVICE_VERSION_TABLE_COLUMN_VERSION, <<"version">>).
+
+%% Table: session
+-define(SESSION_TABLE, <<"session">>).
+-define(SESSION_TABLE_COLUMN_USERNAME, <<"username">>).
+-define(SESSION_TABLE_COLUMN_SESSION_KEY, <<"session_key">>).
 
 %%%------------------------
 %%% Confession Queries
@@ -178,6 +185,9 @@ get_confession(Server, ConfessionId) ->
                                 ]),
 
         case Res of
+                {selected, _, []} ->
+                        'undefined';
+
                 {selected, 
 			[
 				?CONFESSIONS_TABLE_COLUMN_USERNAME,
@@ -193,8 +203,6 @@ get_confession(Server, ConfessionId) ->
 					image_url = ImageUrl,
 					created_timestamp = CreatedTimestamp
 				};
-                {selected, _, []} ->
-			'undefined';
 		_->
                         ?INFO_MSG("Unable to get confession: ~p", [Res]),
                         error
@@ -518,3 +526,39 @@ set_device_version(Server, Username, Version)->
 		_ ->
 			update_device_version(Server, Username, Version)	
 	end.
+
+
+%%%------------------------
+%%% Device Version Queries
+%%%------------------------
+
+-spec get_session_key(binary(), binary()) -> binary().
+
+get_session_key(Server, Username)->
+
+        Res = ejabberd_odbc:sql_query(Server,
+                                [
+                                        <<"SELECT ">>,
+                                        ?SESSION_TABLE_COLUMN_SESSION_KEY, <<" ">>,
+
+                                        <<"FROM ">>,
+                                        ?SESSION_TABLE, <<" ">>,
+
+                                        <<"WHERE ">>,
+                                        ?SESSION_TABLE_COLUMN_USERNAME, <<"='">>,Username,<<"' ">>
+                                ]),
+
+        case Res of
+                {selected, _, []} ->
+                        'undefined';
+                {selected,
+                        [
+                                ?SESSION_TABLE_COLUMN_SESSION_KEY
+                        ], Result} ->
+                                [[Key]] = Result,
+                                Key;
+                _->
+                        ?INFO_MSG("Unable to get session: ~p", [Res]),
+                        error
+        end.
+

@@ -57,7 +57,7 @@ store_type() -> plain.
 %% @spec (User, Server, Password) -> true | false | {error, Error}
 check_password(User, Server, PassPlainText) ->
 
-    ?INFO_MSG("User logging with: ~p/~p (~p)", [User, PassPlainText, byte_size(PassPlainText)]),
+    %%?INFO_MSG("User logging with: ~p/~p (~p)", [User, PassPlainText, byte_size(PassPlainText)]),
 
     
 
