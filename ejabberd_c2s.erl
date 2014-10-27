@@ -67,6 +67,8 @@
 	 print_state/1
      ]).
 
+-import(custom_odbc_queries, [set_session_key/2]).
+
 -include("ejabberd.hrl").
 -include("logger.hrl").
 
@@ -754,7 +756,7 @@ wait_for_feature_request({xmlstreamelement, El},
 
 		%% Inserted by will.
 		%% Inserts session key on database.
-		custom_odbc_queries:insert_session_key(StateData#state.server, U),
+		custom_odbc_queries:set_session_key(StateData#state.server, U),
 
 
 		ejabberd_hooks:run(c2s_auth_result, StateData#state.server,
@@ -913,7 +915,7 @@ wait_for_sasl_response({xmlstreamelement, El},
 		
 		%% Inserted by will.
                 %% Inserts session key on database.
-                custom_odbc_queries:insert_session_key(StateData#state.server, U),
+                custom_odbc_queries:set_session_key(StateData#state.server, U),
 
 		ejabberd_hooks:run(c2s_auth_result, StateData#state.server,
 				   [true, U, StateData#state.server,
@@ -941,7 +943,7 @@ wait_for_sasl_response({xmlstreamelement, El},
 
 		%% Inserted by will.
                 %% Inserts session key on database.
-                custom_odbc_queries:insert_session_key(StateData#state.server, U),
+                custom_odbc_queries:set_session_key(StateData#state.server, U),
 
 		ejabberd_hooks:run(c2s_auth_result, StateData#state.server,
 				   [true, U, StateData#state.server,
@@ -1812,7 +1814,7 @@ terminate(_Reason, StateName, StateData) ->
 
 			%% Inserted by will.
                 	%% Inserts session key on database.
-                	custom_odbc_queries:insert_session_key(StateData#state.server, StateData#state.user);
+                	custom_odbc_queries:set_session_key(StateData#state.server, StateData#state.user);
 
 		   _ ->
 		       ?INFO_MSG("(~w) Close session for ~s",

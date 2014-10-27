@@ -13,7 +13,7 @@
 -define(NS_WHO_SESSION, <<"who:iq:session">>).
 
 -import(custom_odbc_queries, [get_session_key/2,
-				insert_session_key/2,
+				set_session_key/2,
 				delete_session_key/2]).
 
 -export([start/2, stop/1, set_session/4, unset_session/4, get_session_id/3]).
@@ -42,7 +42,7 @@ set_session(User, Server, _Resource, _Packet) ->
 %%	ejabberd_odbc:sql_query(Server,
   %% 	                        [<<"insert into session VALUES ('">>,User,<<"','">>, Random, <<"')">>]),
 
-%%	custom_odbc_queries:insert_session_key(Server, User),	
+%%	custom_odbc_queries:set_session_key(Server, User),	
 
 	none.
 
