@@ -26,6 +26,8 @@
 
 -export([set_session_key/2, delete_session_key/2, get_session_key/2]).
 
+-export([insert_message/5]).
+
 %%%------------------------
 %%% TABLES
 %%%------------------------
@@ -77,6 +79,15 @@
 -define(SESSION_TABLE, <<"session">>).
 -define(SESSION_TABLE_COLUMN_USERNAME, <<"username">>).
 -define(SESSION_TABLE_COLUMN_SESSION_KEY, <<"session_key">>).
+
+%% Table: messages
+-define(MESSAGES_TABLE, <<"messages">>).
+-define(MESSAGES_TABLE_COLUMN_ID, <<"id">>).
+-define(MESSAGES_TABLE_COLUMN_CHAT_UUID, <<"chat_uuid">>).
+-define(MESSAGES_TABLE_COLUMN_TIMESTAMP, <<"timestamp">>).
+-define(MESSAGES_TABLE_COLUMN_BODY, <<"body">>).
+-define(MESSAGES_TABLE_COLUMN_IMAGE_URL, <<"image_url">>).
+-define(MESSAGES_TABLE_COLUMN_SENDER_USERNAME, <<"sender_username">>).
 
 %%%------------------------
 %%% Confession Queries
@@ -652,3 +663,42 @@ delete_session_key(Server, Username)->
                                 ]),
 
 ok.
+
+
+
+%%%------------------------
+%%% Messages Queries
+%%%------------------------
+
+insert_message(Server, SenderUsername, ChatUUID, Body, ImageUrl)->
+
+        Res = ejabberd_odbc:sql_query(Server,
+                                [
+                                        <<"INSERT INTO ">>,
+                                        ?MESSAGES_TABLE, <<" ">>,
+
+                                        <<"(">>,
+                                        ?MESSAGES_TABLE_COLUMN_CHAT_UUID,<<", ">>,
+                                        ?MESSAGES_TABLE_COLUMN_BODY, <<", ">>,
+					?MESSAGES_TABLE_COLUMN_IMAGE_URL, <<", ">>,
+					?MESSAGES_TABLE_COLUMN_SENDER_USERNAME,
+                                        <<") ">>,
+
+                                        <<"VALUES ">>,
+                                        <<"(">>,
+                                        <<"'">>,ChatUUID,<<"', ">>,
+                                        <<"'">>,Body,<<"', ">>,
+                                        <<"'">>,ImageUrl,<<"', ">>,
+                                        <<"'">>,SenderUsername,<<"'">>,
+                                        <<") ">>
+                                ]),
+
+        case Res of
+                {updated, _Id} ->
+                        ok;
+                _->
+                        ?INFO_MSG("Unable to insert message: ~p", [Res]),
+                        error
+
+
+end.

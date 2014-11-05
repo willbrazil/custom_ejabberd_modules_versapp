@@ -10,7 +10,7 @@
 -include("logger.hrl").
 -include("jlib.hrl").
 
--import(custom_odbc_queries, [get_active_participants/3]).
+-import(custom_odbc_queries, [get_active_participants/3, insert_message/5]).
 
 -export([start/2, stop/1]).
 -export([proxy_message/1, is_chat_packet/1]).
@@ -25,13 +25,17 @@ stop(Host) ->
         ejabberd_hooks:delete(filter_packet, global, ?MODULE, proxy_message, 3),
 	ok.
 
-proxy_message({From, To, #xmlel{name = <<"message">>, attrs = Attrs, children = Children } = Packet}) ->
+proxy_message({#jid{user = FromUser, server = Server, resource = _R} = From, #jid{user = ToUser, server = _S, resource = _Res} = To, #xmlel{name = <<"message">>, attrs = Attrs, children = Children } = Packet}) ->
 
 	?INFO_MSG("PROXY MESSAGE: ~p", [Packet]),
 
 	case {is_chat_packet(Packet), is_proxyed(Packet)} of
 		{true, true} -> {From, To, Packet};
 		{true, false} ->
+
+			MessageBody = xml:get_subtag_cdata(Packet, <<"body">>),	
+			
+			custom_odbc_queries:insert_message(Server, FromUser, ToUser, MessageBody, <<"">>),
 
 			%% For each active participant in the chat, send message.
 			ParticipantsUsername =  custom_odbc_queries:get_active_participants(From#jid.lserver, From#jid.luser,To#jid.luser ),
